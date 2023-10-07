@@ -1,0 +1,13 @@
+*.log
+*.pyc
+.cache/
+.coverage
+.idea/
+.vscode/
+pyquation.egg-info/
+build/
+dist/
+docs/build/
+venv/
+wheelhouse/
+.Equations.bak/

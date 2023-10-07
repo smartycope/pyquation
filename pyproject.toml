@@ -1,0 +1,30 @@
+[metadata]
+name = 'pyquation'
+version = '1.0.0'
+description = 'A library to handle math equations like Python classes'
+author = 'Copeland Carter'
+author_email = 'smartycope@gmail.com'
+license = 'MIT/Apache-2.0'
+url = 'https://github.com/smartycope/pyquation'
+
+[requires]
+python_version = ['3.10', '3.11', '3.6', '3.7', '3.8', 'pypy', 'pypy3']
+
+[build-system]
+requires = ['setuptools', 'wheel']
+
+[tool.hatch.commands]
+prerelease = 'hatch build'
+
+[project]
+name = 'pyquation'
+version = '1.0.0'
+description = 'A library to handle math equations like Python classes'
+dependencies = [
+    'sympy', 'ezregex', 'Cope'
+]
+
+[project.optional-dependencies]
+pyquation = [
+  'clipboard'
+]
