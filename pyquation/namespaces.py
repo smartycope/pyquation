@@ -2,6 +2,76 @@ from .Modifier import Modifier
 from .Unit import Unit
 from .Namespace import Namespace
 
+from sympy.physics.units.systems.si import SI
+from sympy.physics.units import Unit
+from sympy.physics.units import *
+import sympy as sp
+from copy import copy
+
+# base = copy(sp.__dict__)
+# base.update({
+#     '_i': sp.I,
+#     '_e': sp.E,
+# })
+
+# physics = base.copy()
+# physics.update({
+#     'a':       meters/second**2,
+#     'v':       meters/second,
+#     'r':       meters,
+#     'angA':    radians/second**2,
+#     'angV':    radians/second,
+#     'angs':    radians/second,
+#     'dang':    radians/second,
+#     'dang':    radians,
+#     'dt':      S('delta time') * seconds,
+#     'w':             'weight', 'Newtons',
+#     'W':             'work', 'Joules',
+#     'm':             'mass', 'kilograms',
+#     'b':             'NO idea',
+#     'f':             'force', 'Newtons',
+#     'R':             'drag force', 'Newtons',
+#     'vlin':          'linear (tangential) velocity', 'meters/second',
+#     'ke':            'kinetic energy', 'Joules',
+#     'peg':           'potential energy due to gravity', 'Joules',
+#     'pes':           'potential energy in a spring', 'Joules',
+#     'pec':           'potential energy due to... the centripetal force?', 'Joules',
+#     'g':             'gravity acceleration', 'meters/second^2',
+#     'h':             'height', 'meters',
+#     'x':             'x', 'meters',
+#     'k':             'the spring\'s constant', 'Newtons/meter',
+#     'te':            'total energy', 'Joules',
+#     'ke':            'kenetic energy', 'Joules',
+#     'pe':            'potential energy', 'Joules',
+#     'T':             'Period', 'revolutions/second',
+#     't':             'time', 'seconds',
+#     'pos':           'position', 'meters?',
+#     'mag':           'vector magnitude',
+#     'me':            "Mechanical Energy", 'Joules',
+#     'wdaf':          '"Work Done Against Friction"',
+#     'P':             'Power', 'watts',
+#     'p':             'Momentum', 'kilogram meters/second',
+#     'ker':           'rotational kinetic energy', 'Joules',
+#     'd':             'displacement', 'meters',
+#     'D':             'distance', 'meters',
+#     'vec':           'generic position vector',
+#     'mu_k':          'coefficent of kinetic friction',
+#     'mu_s':          'coefficent of static friction',
+#     'N':             'Magnitude of the normal force', 'Newtons',
+#     'imp':           'Impulse', 'Newton seconds',
+#     'I':             'moment of inertia', 'kilogram meters^2',
+#     'f_avg':         'average force over time',
+#     'tau':           'torque', 'Newton meters',
+#     'kew':           'kinetic energy in a flywheel', 'Joules',
+#     'L':             'Angular Momentum', 'kilogram meters^2/second',
+#     'G':             'Gravitational Constant', 'Newtons * meters/kilograms^2',
+#     'v_esc':         'Escape velocity', 'meters/second', {'v_o', 'escv', 'esc_v'},
+#     'M_E':           'mass of the earth (or the body in question) (5.98*10^24 kg)', 'kilograms',
+#     'R_E':           'radius of the earth (or the body in question) (6.37*10^6 m)', 'meters',
+#     'M_S':           'Mass of the sun (or body in question)', 'kilograms',
+#     'sma':           'semi-major axis (smallest radius of an ellipse)', 'meters',
+#     'ma':            'major axis (largest radius of an ellipse)', 'meters',
+# })
 
 physics = Namespace((
         Unit('a',    'acceleration', 'meters/second^2'),

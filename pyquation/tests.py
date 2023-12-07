@@ -1,0 +1,4 @@
+def runTests():
+    pass
+
+runTests()
