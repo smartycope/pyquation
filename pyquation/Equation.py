@@ -1,141 +1,107 @@
-from sympy import Symbol, pretty, flatten, Expr, parse_expr, solve, latex as _latex
-import ezregex as er
-import re
-from copy import copy
-from Cope import unknown, known, reprise, ZerosDict, ensureNotIterable, inIPython, debug
-from .Unit import Unit
-from sympy.physics.units.systems.si import SI
-from typing import Dict
+from sympy import Eq, Expr, evaluate, pretty, Symbol, solve, abs, sqrt, diff
+from sympy.physics.units import convert_to
+from sympy.printing import latex as latex
 
-class Equation:
-    def __init__(self, rhs:Expr, lhs:Expr, help=''):
-        self._help = help
-        self.expr = Eq(rhs, lhs)
-        self.expr = equation
-        self.atoms = rhs.atoms() | lhs.atoms()
-        self.atom_names = [a.name for a in self.atoms.keys()]
+from Variable import Variable
 
-    def help(self):
-        if inIPython(False):
-            from IPython.display import display
-            display(self.expr)
+try:
+    import IPython
+    from IPython.display import display
+except ImportError:
+    ipython = False
+else:
+    ipython = bool(IPython.get_ipython())
+
+
+class Equation(Eq):
+    show_solved_term = False
+    def __new__(cls, lhs, rhs, description=''):
+        self_ = super().__new__(cls, lhs, rhs, evaluate=False, distribute=False)
+        self_.description = self_.desc = description
+        self_.variables = {v for v in self_.atoms(Symbol) if type(v) is Variable}
+
+        # Build the lookup table for all the Variables in this equation
+        # This defines what parameters can be passed to __call__()
+        self_._var_lookup = {}
+        for var in self_.variables:
+            for sym in var.all_names:
+                # All the different names reference the original Variable
+                self_._var_lookup[sym] = var
+                # The uncertainties reference a new Symbol
+                unc = Symbol('δ'+var.name, **var.assumptions0)
+                self_._var_lookup['δ'+sym] = unc
+                self_._var_lookup['unc_'+sym] = unc
+                self_._var_lookup[sym+'_unc'] = unc
+
+        return self_
+
+    def help(self) -> None:
+        if ipython:
+            display(self)
         else:
-            print(pretty(self.expr))
-        print(', where:')
+            print(pretty(self))
 
-        for unit in self.atoms.values():
-            # print(f'    {param.help()}' + (f' (default: {self.defaults[param]})' if self.defaults[param] is not None else ''))
-            print(f'\t{unit}: {SI.get_dimensional_expr(unit)}')
+        print('where:')
 
-        print(self._help)
+        for var in self.variables:
+            print(f"\t{var} is {var.full_name} in units of {var.default_unit}")
+        print()
+        print(self.desc)
 
-    def solve(self, for_:Symbol):
-        if for_ in self.atoms.keys():
-            # assert(type(solveSymbolically) is Symbol, f"Incorrect type '{type(solveSymbolically)}' for solveSymbolically parameter (accepts bool or Symbol)")
-            return ensureNotIterable(solve(self.expr, for_))
-        elif for_ in self.atom_names:
-            return ensureNotIterable(solve(self.expr, Symbol(for_)))
+    def full_form(self):
+        orig = Variable.full_form
+        Variable.full_form = True
+        if ipython:
+            display(self)
         else:
-            raise TypeError(f"{for_} not in {self.expr}")
+            print(self)
+        Variable.full_form = orig
 
-    def __call__(self,
-        *,
-        symbolic=False,
-        allowNonsenseParams=False,
-        raiseErrors=False,
-        **values
-    ):
-        # Parameter checking
-        if not allowNonsenseParams:
-            for input in values.keys():
-                if input not in self.atom_names:
-                    raise TypeError(f'Parameter {input} not in equation:\n{pretty(self.expr)}')
+    def restructure(self, term=Variable) -> list['Equation']:
+        """ `rewrite` is already defined, and I don't want to mess with it """
+        if term not in self.variables:
+            raise ValueError(f"{term} not in {self}")
 
-        # If we're calling with no parameters
-        if not len(values) and not symbolic:
-            self.help()
-            return
+        return [Equation(term, i) for i in solve(self, term, list=True)]
 
-        # Add whatever we don't have as a symbol instead of solving for it or throwing an error
-        if symbolic:
-            return self.expr.subs(values, simultaneous=True)
+    def _get_uncertainty(self):
+        expr = solve(self, F, list=True)[0]
+        abs(sqrt(sum(
+            diff(expr, sym)**2 * Symbol("δ" + sym.name)**2
+            for sym in expr.atoms(Symbol)
+        ))).subs({M:2, A:2, 'δM': 1, 'δA':1})
 
-        # If we are given all the variables, and exactly all the variables, just
-        # solve, don't try to solve *for* anything
-        if set(values.keys()) == set(self.atom_names):
-            symbolicAns = solve(self.expr)
-            if not len(symbolicAns):
-                err = Exception(f'Unable to solve {self.expr} for {u}')
-                if raiseErrors:
-                    raise err
-                else:
-                    debug(err, clr=Colors.ALERT)
-            if symbolic:
-                return symbolicAns
+    def __call__(self, units=None, show_solved_term=..., **values):
+        values = {
+            # Replace all the keys with their proper Variable types
+            self._var_lookup[sym]: val
+            for sym, val in values.items()
+        }
 
-            try:
-                return ensureNotIterable(symbolicAns.subs(known(values)))
-            except AttributeError:
-                try:
-                    # Yes, yes, I know, this line of code is disgusting. Let me explain.
-                    # No no, it is too long. Let me sum up.
-                    # Often sympy gives you this: [{<symbol>: <solution>}].
-                    # This turns that into just <solution>, but ONLY if it is
-                    # exactly in that format, and then prints what <symbol> was
-                    dict = ensureNotIterable(symbolicAns)
-                    print(f'solving for {ensureNotIterable(ensureNotIterable(flatten(dict)).subs(known(values)))}...')
-                    return ensureNotIterable(ensureNotIterable(flatten(invertDict(dict))).subs(known(values)))
-                except AttributeError:
-                    return symbolicAns
+        uncertainties = {}
 
-        # The important stuff
-        u = unknown(values, *self.atom_names)
-        if u:
-            symbolicAns = solve(self.expr, Symbol(u))
+        for v in values.keys():
+            if v not in self.variables:
+                if
+                raise ValueError(f"{v} not in equation1 {self}")
 
-            if not len(symbolicAns):
-                err = Exception(f'Unable to solve {self.expr} for {u}')
-                if raiseErrors:
-                    raise err
-                else:
-                    debug(err, clr=Colors.ALERT)
+        subbed = self.subs(values, simultaneous=True)
 
-            ans = ensureNotIterable(ensureNotIterable(symbolicAns).subs(known(values)))
-            return ans
-        else:
-            raise TypeError(f'Incorrect number of parameters. Parameters are: {tuple(self.atom_names)}')
+        if show_solved_term is Ellipsis:
+            show_solved_term = Equation.show_solved_term
+
+        # If the user gives us all but one variable, solve for that one, in correct units
+        if len(values) == len(self.variables) - 1:
+            solve_for = self.variables.difference(values.keys()).pop()
+            solved = convert_to(solve(subbed, list=True)[0], units or solve_for.default_unit)
+            return Eq(solve_for, solved) if show_solved_term else solved
+
+        # If the user gives us all the variables, just check if they're self-consistent
+        elif len(values) == len(self.variables):
+            return subbed.lhs == convert_to(subbed.rhs, subbed.lhs)
+
+        # Otherwise, they gave us less units than we need to solve it, so just solve it symbolically
+        return convert_to(subbed, units) if units else subbed
 
     def __str__(self):
-        return pretty(self.expr)
-
-    def copy(self, latex=True):
-        try:
-            from clipboard import copy
-        except ImportError:
-            print("Looks like clipboard is not installed. Try running `pip install clipboard`")
-        else:
-            if latex:
-                copy(_latex(self.expr))
-            else:
-                copy(pretty(self.expr))
-
-    def applicable(self, *atoms:str, loose=False, tags=True) -> bool:
-        """ Returns True if we can use the variables given to derive a new variable using this equation.
-            If loose is set to True, then return True if any of the variables given relate to this equation.
-            If tags is set to True, then search the tags as well
-        """
-        raise NotImplementedError('This hasnt been modified to work yet')
-        # We want it to be applicable if we have a default for it
-        unknownAtomNames = set(self.atom_names).difference(self.defaults.keys())
-        if loose:
-            list = bool(len(set(atoms).intersection(unknownAtomNames)))
-        else:
-            list = len(set(atoms).intersection(unknownAtomNames)) == len(unknownAtomNames) - 1
-
-        if tags:
-            return list or bool(len(set(atoms).intersection(self.tags)))
-        else:
-            return list
-
-            # return set(atoms).issuperset(self.atomNames)
-            # return set(self.atomNames).issubset(atoms)
+        return pretty(self)

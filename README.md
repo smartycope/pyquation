@@ -1,14 +1,31 @@
 # pyquation
-
-A library to handle math equations like Python classes
-I built this while taking various college classes. There's a 4 modules currently preloaded with a bunch of equations available: mathEquations, physicsEquations, waveEquations, and electronicsEquations. Some of them are accurate, some of them may not be, and some of them are my mad flailings as I try to understand the subject matter in real time. Use at your own risk.
-The Equation, Unit, and Namespace classes should work just fine, however.
-
+###### *Treat math like code*
 
 **Table of Contents**
 
+* [About](#about)
+* [Background](#background)
 * [Installation](#installation)
 * [License](#license)
+
+## About
+
+This library lets you treat math equations like functions. Really, it's just a thin wrapper around sympy's Equality class and unit system in a way that makes more sense to me. There's also a bunch of equations included, but I offer no guarentees about them being accurate. Most of them were thrown in there as I took classes to help me understand the concepts. I haven't really double checked them. However, it's not hard to add your own equations.
+
+
+## Background
+
+A few things always bothered me about math syntax when taking college physics classes:
+
+* I never liked how people talk about equations. Really, they're just functions: you put numbers in, you get a number out.
+* Units are complicated.
+* Physics *really* needs to learn the concept of `namespaces`. Stop re-using variable names!
+* Math syntax is really, really confusing to read. Maybe it's just me as a programmer, but I have the hardest time with it.
+
+And I hate remember and using equations by hand. I know *how* to do algebra, and yet somehow, I always make a mistake. Same with unit conversions.
+
+But programming: programming is elegant. It's easy to read (at least for me), it does everything for you, and it doesn't make mistakes.  So I made this. This is the 3rd iteration of it. It got simpler as I learned more.
+
 
 ## Installation
 
