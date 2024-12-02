@@ -1,4 +1,4 @@
-from sympy import Eq, Expr, evaluate, pretty, Symbol, solve, abs, sqrt, diff
+from sympy import Eq, Expr, evaluate, pretty, Symbol, solve, sqrt, diff
 from sympy.physics.units import convert_to
 from sympy.printing import latex as latex
 
@@ -64,12 +64,12 @@ class Equation(Eq):
 
         return [Equation(term, i) for i in solve(self, term, list=True)]
 
-    def _get_uncertainty(self):
-        expr = solve(self, F, list=True)[0]
-        abs(sqrt(sum(
-            diff(expr, sym)**2 * Symbol("δ" + sym.name)**2
-            for sym in expr.atoms(Symbol)
-        ))).subs({M:2, A:2, 'δM': 1, 'δA':1})
+    # def _get_uncertainty(self):
+    #     expr = solve(self, F, list=True)[0]
+    #     abs(sqrt(sum(
+    #         diff(expr, sym)**2 * Symbol("δ" + sym.name)**2
+    #         for sym in expr.atoms(Symbol)
+    #     ))).subs({M:2, A:2, 'δM': 1, 'δA':1})
 
     def __call__(self, units=None, show_solved_term=..., **values):
         values = {
@@ -82,7 +82,7 @@ class Equation(Eq):
 
         for v in values.keys():
             if v not in self.variables:
-                if
+                # if
                 raise ValueError(f"{v} not in equation1 {self}")
 
         subbed = self.subs(values, simultaneous=True)
