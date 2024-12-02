@@ -4,9 +4,22 @@
 **Table of Contents**
 
 * [About](#about)
+* [Note](#note)
 * [Background](#background)
 * [Installation](#installation)
 * [License](#license)
+
+## Note
+
+This library is probably not what you want if you're writing reusable code for any sort of industry environment. This library isn't necissarily innefficient, but it adds an unnessicary layer of abstraction that doesn't add much other than make it easy for the programmer. To do it the *right* way, I'll refer you to:
+
+    - sympy (enormous symbolic math library)
+        - sympy units
+        - sympy lambdify
+    - pint (handling units)
+    - uncertainties (handling uncertainty)
+
+If, however, you want something quick and dirty, but also useful and usable, this is perfect. It's meant to be easy to use, while also handling units and uncertainties. I wrote it for pouding out college problems in a Jupyter notebook.
 
 ## About
 
@@ -39,9 +52,4 @@ $ pip install pyquation
 
 ## License
 
-pyquation is distributed under the terms of both
-
-- [MIT License](https://choosealicense.com/licenses/mit)
-- [Apache License, Version 2.0](https://choosealicense.com/licenses/apache-2.0)
-
-at your option.
+pyquation is distributed under the terms of the [MIT License](https://choosealicense.com/licenses/mit)
