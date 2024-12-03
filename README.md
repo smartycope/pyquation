@@ -5,7 +5,9 @@
 
 * [About](#about)
 * [Note](#note)
+* [Documentation](#documentation)
 * [Background](#background)
+* [Symbolic Error Handling](#symbolic-error-handling)
 * [Installation](#installation)
 * [License](#license)
 
@@ -13,13 +15,18 @@
 
 This library is probably not what you want if you're writing reusable code for any sort of industry environment. This library isn't necissarily innefficient, but it adds an unnessicary layer of abstraction that doesn't add much other than make it easy for the programmer. To do it the *right* way, I'll refer you to:
 
-    - sympy (enormous symbolic math library)
-        - sympy units
-        - sympy lambdify
-    - pint (handling units)
-    - uncertainties (handling uncertainty)
+- sympy (enormous symbolic math library)
+    - sympy units
+    - sympy lambdify
+- pint (units library)
+- uncertainties (uncertainty library)
+- pycertainty (very obscure symbolic uncertainty library)
 
 If, however, you want something quick and dirty, but also useful and usable, this is perfect. It's meant to be easy to use, while also handling units and uncertainties. I wrote it for pouding out college problems in a Jupyter notebook.
+
+## Documentation
+
+To see how to use the library, see [demo.ipynb](demo.ipynb)
 
 ## About
 
@@ -39,8 +46,8 @@ And I hate remember and using equations by hand. I know *how* to do algebra, and
 
 But programming: programming is elegant. It's easy to read (at least for me), it does everything for you, and it doesn't make mistakes.  So I made this. This is the 3rd iteration of it. It got simpler as I learned more.
 
-
 ## Installation
+When looking, I couldn't find a python library for symbolic error handling. But
 
 pyquation is distributed on [PyPI](https://pypi.org) as a universal
 wheel and is available on Linux/macOS and Windows and supports
