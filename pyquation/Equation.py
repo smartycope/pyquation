@@ -4,6 +4,7 @@ from sympy.printing import latex as latex
 from functools import reduce
 from operator import mul
 
+from .CombinedEquation import CombinedEquation
 from .Variable import Variable
 
 try:
@@ -14,9 +15,8 @@ except ImportError:
 else:
     ipython = bool(IPython.get_ipython())
 
-
 def remove_units(expr):
-    return reduce(mul, (i for i in flatten(expr.as_coeff_mul()) if not isinstance(i, Unit)))
+    return reduce(mul, (i for i in flatten(expr.as_coeff_mul()) if not len(i.atoms(Unit))))
 
 class Equation(Eq):
     show_solved_term = False
@@ -33,7 +33,7 @@ class Equation(Eq):
                 # All the different names reference the original Variable
                 self_._var_lookup[sym] = var
                 # The uncertainties reference a new Symbol
-                unc = Symbol('δ'+var.name, **var.assumptions0, positive=True)
+                unc = Symbol('δ'+var.name, positive=True)
                 self_._var_lookup['δ'+sym] = unc
                 self_._var_lookup['unc_'+sym] = unc
                 self_._var_lookup[sym+'_unc'] = unc
@@ -84,25 +84,32 @@ class Equation(Eq):
             ))).subs(
                 # Convert to the default units (the ones that should be used byuncertainties the equation), and then remove the units
                 # This shouldn't have to deal with symbols, *I think*
-                {sym: remove_units(convert_to(val, sym.default_unit)) for sym, val in (values | uncertainties).items()},
+                {sym: remove_units(convert_to(val, sym.default_unit)) for sym, val in values.items()} | uncertainties,
             ).simplify()
 
-    def __call__(self, units=None, show_solved_term=..., **values):
+    def __call__(self, units=None, show_solved_term=..., tuple=False, allow_random_variables=False, **values):
         """ Apply given variables to the equation.
             Variables are given via keyword arguments, where each argument is a symbol or name of a variable in the equation.
             Uncertainties of the variables are specified using `unc_<variable>`, `<variable>_unc`, or `δ<variable>`.
+
+            `units` specifies what unit the end result comes in, if possible
+            `show_solved_term`, when True, returns an Eq instead of just a value
+            `tuple`, when True, will return a tuple of (value, uncertainty), even when no uncertainties were given
+                If all variables are specified, a single bool is still returned.
+            `allow_random_variables`, when True, will not throw an error if variables not in the equation are passed
         """
 
         uncertainties = {}
         vals = {}
         for key, val in values.items():
-            if (var := self._var_lookup.get(key)) is None:
-                raise ValueError(f"{key} not in equation1 {self}")
+            if (var := self._var_lookup.get(key)) is None and not allow_random_variables:
+                raise ValueError(f"{key} not in equation {self}")
 
-            if key.endswith('_unc') or key.startswith(('unc_', 'δ')):
-                uncertainties[var] = val
-            else:
-                vals[var] = val
+            if key in self._var_lookup:
+                if key.endswith('_unc') or key.startswith(('unc_', 'δ')):
+                    uncertainties[var] = val
+                else:
+                    vals[var] = val
 
         subbed = self.subs(vals, simultaneous=True)
 
@@ -123,14 +130,25 @@ class Equation(Eq):
                     unc = remove_units(convert_to(unc*solve_for.default_unit, units))
                 return ans, unc
             else:
-                return ans
+                return (ans, 0) if tuple else ans
 
         # If the user gives us all the variables, just check if they're self-consistent
         elif len(vals) == len(self.variables):
             return subbed.lhs == convert_to(subbed.rhs, subbed.lhs)
 
         # Otherwise, they gave us less units than we need to solve it, so just solve it symbolically
-        return convert_to(subbed, units) if units else subbed
+        ans = convert_to(subbed, units) if units else subbed
+        return (ans, 0) if tuple else ans
+
+    def __add__(self, eq):
+        if isinstance(eq, Equation):
+            return CombinedEquation(self, eq)
+        elif isinstance(eq, CombinedEquation):
+            return CombinedEquation(self, *eq.equations)
+        else:
+            raise TypeError('Only Equations can be added to other Equations')
+
+
 
     def __str__(self):
         return pretty(self)

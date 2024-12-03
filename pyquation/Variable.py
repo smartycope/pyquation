@@ -1,6 +1,5 @@
-from sympy.physics.units import Quantity, convert_to, Dimension
-from sympy import Symbol, AtomicExpr, latex
-from sympy.printing.latex import LatexPrinter
+from sympy.physics.units import Quantity, Dimension
+from sympy import Symbol
 
 
 class Variable(Symbol):
